@@ -20,24 +20,52 @@
       opacity: 0.7;
     }
 
+    body {
+      --temperature-color: #F57700;
+      --dew-point-color: #00C2F5;
+      --wind-chill-color: #7ED800;
+      --snow-color: #8C35A0;
+      --rain-color: #00C2F5;
+    }
+
     polyline.temperature {
-      stroke: red;
+      stroke: var(--temperature-color);
+    }
+
+    .legend > .temperature {
+      fill: var(--temperature-color);
     }
     
     polyline.dew-point {
-      stroke: green;
+      stroke: var(--dew-point-color);
+    }
+
+    .legend > .dew-point {
+      fill: var(--dew-point-color);
     }
 
     polyline.wind-chill {
-      stroke: blue;
+      stroke: var(--wind-chill-color);
+    }
+
+    .legend > .wind-chill {
+      fill: var(--wind-chill-color);
     }
 
     polyline.snow {
-      stroke: gray;
+      stroke: var(--snow-color);
+    }
+
+    .legend > .snow {
+      fill: var(--snow-color);
     }
 
     polyline.rain {
-      stroke: blue;
+      stroke: var(--rain-color);
+    }
+
+    .legend > .rain {
+      fill: var(--rain-color);
     }
 
     line.horizontal-gridline {
@@ -144,7 +172,6 @@
       svg.setAttribute('height', '100%')
       svg.setAttribute('viewBox', `0 0 ${maxWidth} ${maxHeight}`)
 
-
       const canvasPadding = 50
 
       // Temperature canvas takes up top 2/3 of screen.
@@ -228,9 +255,8 @@
         ...forecastPoints.map(forecastPoint => forecastPoint.windChill),
       ].filter(n => !isNaN(n))
 
-      const maxTemperature = Math.max(...temperatures)
-
       const minTemperature = Math.min(...temperatures)
+      const maxTemperature = Math.max(...temperatures)
 
       const chartGridlineSpacing = 5
       const chartMaxTemperature = Math.round(maxTemperature / chartGridlineSpacing) * chartGridlineSpacing + chartGridlineSpacing
@@ -329,6 +355,7 @@
         ],
       ])
 
+      // Draw gridlines.
       Array.from(precipitationCoverageLabelToValueMap.entries()).forEach(([_, coverageValue]) => {
         const y = precipitationCanvasBounds.y.max - precipitationCanvasBounds.y.length * (coverageValue.value / (precipitationCoverageLabelToValueMap.size - 1))
 
@@ -375,6 +402,33 @@
 
       drawPrecipitationLine({propertyName: 'snow', className: 'snow'})
       drawPrecipitationLine({propertyName: 'rain', className: 'rain'})
+
+      // Draw legend.
+      const legend = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+      legend.setAttribute('x', 100)
+      legend.setAttribute('y', 100)
+      legend.classList.add('legend')
+      legend.setAttribute('transform', `translate(${canvasPadding} ${maxHeight - (canvasPadding / 2) + 15})`);
+      svg.appendChild(legend)
+
+      const addLegendLabel = ({label, className, offset}) => {
+        const labelElement = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+        labelElement.innerHTML = label
+        labelElement.classList.add('label')
+        labelElement.classList.add(className)
+
+        if (offset) {
+          labelElement.setAttribute('transform', `translate(${offset} 0)`)
+        }
+
+        legend.appendChild(labelElement)
+      }
+
+      addLegendLabel({label: 'Temperature', className: 'temperature'})
+      addLegendLabel({label: 'Dew Point', className: 'dew-point', offset: 150})
+      addLegendLabel({label: 'Wind Chill', className: 'wind-chill', offset: 300})
+      addLegendLabel({label: 'Snow', className: 'snow', offset: 450})
+      addLegendLabel({label: 'Rain', className: 'rain', offset: 600})
 
       weatherForecastContainer.appendChild(svg)
     }
