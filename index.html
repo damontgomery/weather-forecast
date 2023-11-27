@@ -66,9 +66,19 @@
 
   </style>
   <script>
-    // @todo get these from query parameters.
-    const latitude = 41.9536
-    const longitude = -87.7117
+    const queryParameters = new URLSearchParams(window.location.search)
+
+    let latitude = 41.9536
+    let longitude = -87.7117
+
+    if (queryParameters.has('lat')) {
+      latitude = parseFloat(queryParameters.get('lat'))
+    }
+    if (queryParameters.has('lon')) {
+      longitude = parseFloat(queryParameters.get('lon'))
+    }
+
+    console.log(latitude, longitude, queryParameters)
 
     const xhr = new XMLHttpRequest()
     
@@ -214,17 +224,15 @@
       })
 
       // Draw Temperature gridlines.
-      const maxTemperature = Math.max(
+      const temperatures = [
         ...forecastPoints.map(forecastPoint => forecastPoint.temperature),
         ...forecastPoints.map(forecastPoint => forecastPoint.dewPoint),
         ...forecastPoints.map(forecastPoint => forecastPoint.windChill),
-      )
+      ].filter(n => !isNaN(n))
 
-      const minTemperature = Math.min(
-        ...forecastPoints.map(forecastPoint => forecastPoint.temperature),
-        ...forecastPoints.map(forecastPoint => forecastPoint.dewPoint),
-        ...forecastPoints.map(forecastPoint => forecastPoint.windChill),
-      )
+      const maxTemperature = Math.max(...temperatures)
+
+      const minTemperature = Math.min(...temperatures)
 
       const chartGridlineSpacing = 5
       const chartMaxTemperature = Math.round(maxTemperature / chartGridlineSpacing) * chartGridlineSpacing + chartGridlineSpacing
@@ -267,7 +275,7 @@
       // points: {x: number, y: number}[]
       const drawPolyline = ({points, color= 'black', className}) => {
         const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline')
-        polyline.setAttribute('points', points.map(p => `${p.x},${p.y}`).join(' '))
+        polyline.setAttribute('points', points.filter(p => !isNaN(p.y)).map(p => `${p.x},${p.y}`).join(' '))
         polyline.setAttribute('stroke', color)
         polyline.setAttribute('fill', 'none')
         polyline.classList.add(className)
