@@ -13,10 +13,11 @@
       stroke: black;
       stroke-linecap: round;
     }
-
+    
     polyline {
-      stroke-width: 2;
+      stroke-width: 5;
       stroke-linecap: round;
+      opacity: 0.7;
     }
 
     polyline.temperature {
@@ -50,6 +51,18 @@
       font: normal 1rem sans-serif;
       fill: black;
     }
+
+    line.vertical-gridline {
+      stroke: black;
+      opacity: 0.5;
+      stroke-width: 1;
+    }
+
+    text.vertical-gridline {
+      font: normal 1rem sans-serif;
+      fill: black;
+    }
+
   </style>
   <script>
     // @todo get these from query parameters.
@@ -154,6 +167,52 @@
       }
 
       // Draw gridlines.
+
+      // Draw time gridlines.
+      forecastPoints.forEach((forecastPoint, i) => {
+        const startTime = new Date(forecastPoint.startTime)
+
+        const shouldDrawLabel = (
+          i == 0 ||
+          i == forecastPoints.length - 1 ||
+          startTime.getHours() % 3 == 0
+        )
+
+        if (!shouldDrawLabel) {
+          return
+        }
+
+        const x = temperatureCanvasBounds.x.min + temperatureCanvasBounds.x.length * (i / (forecastPoints.length - 1))
+
+        const temperatureGridline = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+        temperatureGridline.setAttribute('x1', x)
+        temperatureGridline.setAttribute('y1', temperatureCanvasBounds.y.min)
+        temperatureGridline.setAttribute('x2', x)
+        temperatureGridline.setAttribute('y2', temperatureCanvasBounds.y.max)
+        temperatureGridline.classList.add('vertical-gridline')
+        temperatureGridline.classList.add('temperature')
+        svg.appendChild(temperatureGridline)
+
+        const precipitationGridline = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+        precipitationGridline.setAttribute('x1', x)
+        precipitationGridline.setAttribute('y1', precipitationCanvasBounds.y.min)
+        precipitationGridline.setAttribute('x2', x)
+        precipitationGridline.setAttribute('y2', precipitationCanvasBounds.y.max)
+        precipitationGridline.classList.add('vertical-gridline')
+        precipitationGridline.classList.add('precipitation')
+        svg.appendChild(precipitationGridline)
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+        text.setAttribute('x', x)
+        text.setAttribute('y', maxHeight * (2/3))
+        text.setAttribute('text-anchor', 'end')
+        text.setAttribute('transform', `rotate(-90 ${x} ${maxHeight * (2/3)}) translate(18, 4)`)
+        text.innerHTML = startTime.toLocaleString('en-US', {hour: 'numeric', hour12: true})
+        text.classList.add('vertical-gridline')
+        svg.appendChild(text)
+      })
+
+      // Draw Temperature gridlines.
       const maxTemperature = Math.max(
         ...forecastPoints.map(forecastPoint => forecastPoint.temperature),
         ...forecastPoints.map(forecastPoint => forecastPoint.dewPoint),
@@ -187,15 +246,21 @@
         line.classList.add('temperature')
         svg.appendChild(line)
 
-        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text')
-        text.setAttribute('x', temperatureCanvasBounds.x.min)
-        text.setAttribute('y', y)
-        text.setAttribute('text-anchor', 'end')
-        text.setAttribute('transform', 'translate(-10, 4)')
-        text.innerHTML = `${i}°`
-        text.classList.add('horizontal-gridline')
-        text.classList.add('temperature')
-        svg.appendChild(text)
+        const axisLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+        axisLabel.setAttribute('x', temperatureCanvasBounds.x.min)
+        axisLabel.setAttribute('y', y)
+        axisLabel.setAttribute('text-anchor', 'end')
+        axisLabel.setAttribute('transform', 'translate(-10, 4)')
+        axisLabel.innerHTML = `${i}°`
+        axisLabel.classList.add('horizontal-gridline')
+        axisLabel.classList.add('temperature')
+        svg.appendChild(axisLabel)
+
+        // Add another in the middle.
+        const middleLabel = axisLabel.cloneNode(true)
+        middleLabel.setAttribute('x', temperatureCanvasBounds.x.min + 0.5 * temperatureCanvasBounds.x.length)
+        middleLabel.setAttribute('transform', 'translate(0, 4)')
+        svg.appendChild(middleLabel)
       }
 
       // points: {x: number, y: number}[]
@@ -222,7 +287,6 @@
       drawTemperatureLine({propertyName: 'temperature', className: 'temperature'})
       drawTemperatureLine({propertyName: 'dewPoint', className: 'dew-point'})
       drawTemperatureLine({propertyName: 'windChill', className: 'wind-chill'})
-
 
       // Precipitation
       const precipitationCoverageLabelToValueMap = new Map([
