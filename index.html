@@ -31,6 +31,14 @@
       stroke: blue;
     }
 
+    polyline.snow {
+      stroke: gray;
+    }
+
+    polyline.rain {
+      stroke: blue;
+    }
+
     line.horizontal-gridline {
       stroke: black;
       opacity: 0.5;
@@ -65,11 +73,21 @@
       const probabilityOfPercipitations = xmlToArray('probability-of-precipitation > value')
         .map(n => parseInt(n.innerHTML))
 
-      const weatherConditions = xmlToArray('weather-conditions > value')
-        .map(n => ({
-          type: n.getAttribute('weather-type'),
-          coverage: n.getAttribute('coverage'),
-        }))
+      const weatherConditions = xmlToArray('weather-conditions')
+        .map(n => {
+          const value = n.querySelector('value')
+          if (!value) {
+            return {
+              type: 'none',
+              coverage: 'none',
+            }
+          }
+
+          return {
+            type: value.getAttribute('weather-type'),
+            coverage: value.getAttribute('coverage'),
+          }
+        })
 
       const startTimes = xmlToArray('start-valid-time')
         .map(n => n.innerHTML)
@@ -262,6 +280,30 @@
         text.classList.add('precipitation')
         svg.appendChild(text)
       })
+
+      const drawPrecipitationLine = ({propertyName, className}) => {
+        drawPolyline({
+          points: forecastPoints.map((forecastPoint, i) => {
+            // weatherCondition: {type: string, coverage: string}
+            const weatherCondition = forecastPoint.weatherCondition
+
+            let value = 0;
+
+            if (weatherCondition.type === propertyName) {
+              value = precipitationCoverageLabelToValueMap.get(weatherCondition.coverage).value
+            }
+            
+            return {
+              x: precipitationCanvasBounds.x.min + precipitationCanvasBounds.x.length * (i / (forecastPoints.length - 1)),
+              y: precipitationCanvasBounds.y.max - precipitationCanvasBounds.y.length * (value / (precipitationCoverageLabelToValueMap.size - 1))
+            }
+          }),
+          className
+        })
+      }
+
+      drawPrecipitationLine({propertyName: 'snow', className: 'snow'})
+      drawPrecipitationLine({propertyName: 'rain', className: 'rain'})
 
       weatherForecastContainer.appendChild(svg)
     }
