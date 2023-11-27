@@ -15,9 +15,10 @@
     }
     
     polyline {
-      stroke-width: 5;
+      stroke-width: 20px;
       stroke-linecap: round;
       opacity: 0.7;
+      stroke-linejoin: round;
     }
 
     body {
@@ -30,6 +31,11 @@
 
     polyline.temperature {
       stroke: var(--temperature-color);
+    }
+
+    .legend text {
+      font: normal 24px sans-serif;
+      text-transform: lowercase;
     }
 
     .legend > .temperature {
@@ -71,13 +77,16 @@
     line.horizontal-gridline {
       stroke: black;
       opacity: 0.5;
-      stroke-width: 1;
-      stroke-dasharray: 3;
+      stroke-width: 3px;
+      stroke-dasharray: 20;
     }
 
     text.horizontal-gridline {
-      font: normal 1rem sans-serif;
+      font: normal 24px sans-serif;
       fill: black;
+      stroke: white;
+      stroke-width: 12px;
+      paint-order: stroke;
     }
 
     line.vertical-gridline {
@@ -87,7 +96,7 @@
     }
 
     text.vertical-gridline {
-      font: normal 1rem sans-serif;
+      font: normal 24px sans-serif;
       fill: black;
       text-transform: lowercase;
     }
@@ -242,7 +251,7 @@
         text.setAttribute('x', x)
         text.setAttribute('y', maxHeight * (2/3))
         text.setAttribute('text-anchor', 'end')
-        text.setAttribute('transform', `rotate(-90 ${x} ${maxHeight * (2/3)}) translate(18, 4)`)
+        text.setAttribute('transform', `rotate(-90 ${x} ${maxHeight * (2/3)}) translate(30, 5)`)
         text.innerHTML = startTime.toLocaleString('en-US', {hour: 'numeric', hour12: true})
         text.classList.add('vertical-gridline')
         svg.appendChild(text)
@@ -424,11 +433,13 @@
         legend.appendChild(labelElement)
       }
 
+      const legendLabelWidth = 200
+
       addLegendLabel({label: 'Temperature', className: 'temperature'})
-      addLegendLabel({label: 'Dew Point', className: 'dew-point', offset: 150})
-      addLegendLabel({label: 'Wind Chill', className: 'wind-chill', offset: 300})
-      addLegendLabel({label: 'Snow', className: 'snow', offset: 450})
-      addLegendLabel({label: 'Rain', className: 'rain', offset: 600})
+      addLegendLabel({label: 'Dew Point', className: 'dew-point', offset: legendLabelWidth})
+      addLegendLabel({label: 'Wind Chill', className: 'wind-chill', offset: legendLabelWidth * 2})
+      addLegendLabel({label: 'Snow', className: 'snow', offset: legendLabelWidth * 3})
+      addLegendLabel({label: 'Rain', className: 'rain', offset: legendLabelWidth * 4})
 
       weatherForecastContainer.appendChild(svg)
     }
