@@ -107,7 +107,9 @@
 
       const canvasPadding = 50
 
-      const canvasBounds = {
+      // Temperature canvas takes up top 2/3 of screen.
+      const temperatureCanvasHeightPercent = 2 / 3
+      const temperatureCanvasBounds = {
         x: {
           min: canvasPadding,
           max: maxWidth - canvasPadding,
@@ -115,11 +117,23 @@
         },
         y: {
           min: canvasPadding,
-          max: maxHeight - canvasPadding,
-          length: maxHeight - (canvasPadding * 2),
+          max: (maxHeight * temperatureCanvasHeightPercent) - canvasPadding,
+          length: (maxHeight * temperatureCanvasHeightPercent) - (canvasPadding * 2),
         },
       }
 
+      const precipitationCanvasBounds = {
+        x: {
+          min: canvasPadding,
+          max: maxWidth - canvasPadding,
+          length: maxWidth - (canvasPadding * 2),
+        },
+        y: {
+          min: (maxHeight * temperatureCanvasHeightPercent) + canvasPadding,
+          max: maxHeight - canvasPadding,
+          length: (maxHeight * (1 - temperatureCanvasHeightPercent)) - (canvasPadding * 2),
+        },
+      }
 
       // Draw gridlines.
       const maxTemperature = Math.max(
@@ -144,23 +158,25 @@
       }
 
       for (let i = chartTemperatureBounds.min; i <= chartTemperatureBounds.max; i += 5) {
-        const y = canvasBounds.y.max - ((i - chartTemperatureBounds.min) / (chartTemperatureBounds.max - chartTemperatureBounds.min)) * canvasBounds.y.length
+        const y = temperatureCanvasBounds.y.max - temperatureCanvasBounds.y.length * ((i - chartTemperatureBounds.min) / (chartTemperatureBounds.max - chartTemperatureBounds.min))
 
         const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
-        line.setAttribute('x1', canvasBounds.x.min)
+        line.setAttribute('x1', temperatureCanvasBounds.x.min)
         line.setAttribute('y1', y)
-        line.setAttribute('x2', canvasBounds.x.max)
+        line.setAttribute('x2', temperatureCanvasBounds.x.max)
         line.setAttribute('y2', y)
         line.classList.add('horizontal-gridline')
+        line.classList.add('temperature')
         svg.appendChild(line)
 
         const text = document.createElementNS('http://www.w3.org/2000/svg', 'text')
-        text.setAttribute('x', canvasBounds.x.min)
+        text.setAttribute('x', temperatureCanvasBounds.x.min)
         text.setAttribute('y', y)
         text.setAttribute('text-anchor', 'end')
         text.setAttribute('transform', 'translate(-10, 4)')
         text.innerHTML = `${i}°`
         text.classList.add('horizontal-gridline')
+        text.classList.add('temperature')
         svg.appendChild(text)
       }
 
@@ -178,8 +194,8 @@
       const drawTemperatureLine = ({propertyName, className}) => {
         drawPolyline({
           points: forecastPoints.map((forecastPoint, i) => ({
-            x: canvasBounds.x.min + canvasBounds.x.length * (i / (forecastPoints.length - 1)),
-            y: canvasBounds.y.max - canvasBounds.y.length * ((forecastPoint[propertyName] - chartTemperatureBounds.min) / chartTemperatureBounds.length)
+            x: temperatureCanvasBounds.x.min + temperatureCanvasBounds.x.length * (i / (forecastPoints.length - 1)),
+            y: temperatureCanvasBounds.y.max - temperatureCanvasBounds.y.length * ((forecastPoint[propertyName] - chartTemperatureBounds.min) / chartTemperatureBounds.length)
           })),
           className
         })
@@ -188,6 +204,64 @@
       drawTemperatureLine({propertyName: 'temperature', className: 'temperature'})
       drawTemperatureLine({propertyName: 'dewPoint', className: 'dew-point'})
       drawTemperatureLine({propertyName: 'windChill', className: 'wind-chill'})
+
+
+      // Precipitation
+      const precipitationCoverageLabelToValueMap = new Map([
+        [
+          'none', {
+            value: 0,
+            shortLabel: '',
+          }
+        ],
+        [
+          'slight chance', {
+            value: 1,
+            shortLabel: 'sch',
+          }
+        ],
+        [
+          'chance', {
+            value: 2,
+            shortLabel: 'cha',
+          }
+        ],
+        [
+          'likely', {
+            value: 3,
+            shortLabel: 'like',
+          }
+        ],
+        [
+          'occasional', {
+            value: 4,
+            shortLabel: 'occ',
+          }
+        ],
+      ])
+
+      Array.from(precipitationCoverageLabelToValueMap.entries()).forEach(([_, coverageValue]) => {
+        const y = precipitationCanvasBounds.y.max - precipitationCanvasBounds.y.length * (coverageValue.value / (precipitationCoverageLabelToValueMap.size - 1))
+
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+        line.setAttribute('x1', precipitationCanvasBounds.x.min)
+        line.setAttribute('y1', y)
+        line.setAttribute('x2', precipitationCanvasBounds.x.max)
+        line.setAttribute('y2', y)
+        line.classList.add('horizontal-gridline')
+        line.classList.add('precipitation')
+        svg.appendChild(line)
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+        text.setAttribute('x', precipitationCanvasBounds.x.min)
+        text.setAttribute('y', y)
+        text.setAttribute('text-anchor', 'end')
+        text.setAttribute('transform', 'translate(-10, 4)')
+        text.innerHTML = coverageValue.shortLabel
+        text.classList.add('horizontal-gridline')
+        text.classList.add('precipitation')
+        svg.appendChild(text)
+      })
 
       weatherForecastContainer.appendChild(svg)
     }
@@ -198,6 +272,10 @@
       twoDayForecastPoints = forecastPoints.slice(0, 48)
       
       drawSVG(twoDayForecastPoints)
+
+      window.onresize = () => {
+        drawSVG(twoDayForecastPoints)
+      }
     }
 
     xhr.open('GET',`https://forecast.weather.gov/MapClick.php?lat=${latitude}&lon=${longitude}&FcstType=digitalDWML`, true)
