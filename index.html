@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Weather Forecast</title>
+  <style>
+    body {
+      font-family: sans-serif;
+    }
+
+    line {
+      stroke: 2;
+      stroke: black;
+      stroke-linecap: round;
+    }
+
+    polyline {
+      stroke-width: 2;
+      stroke-linecap: round;
+    }
+
+    polyline.temperature {
+      stroke: red;
+    }
+    
+    polyline.dew-point {
+      stroke: green;
+    }
+
+    polyline.wind-chill {
+      stroke: blue;
+    }
+
+    line.horizontal-gridline {
+      stroke: black;
+      opacity: 0.5;
+      stroke-width: 1;
+      stroke-dasharray: 3;
+    }
+
+    text.horizontal-gridline {
+      font: normal 1rem sans-serif;
+      fill: black;
+    }
+  </style>
+  <script>
+    // @todo get these from query parameters.
+    const latitude = 41.9536
+    const longitude = -87.7117
+
+    const xhr = new XMLHttpRequest()
+    
+    const getForecastPointsFromXML = () => {
+      const xmlToArray = q => Array.from(xhr.responseXML.documentElement.querySelectorAll(q))
+
+      const temperatures = xmlToArray('temperature[type="hourly"] > value')
+        .map(n => parseInt(n.innerHTML))
+
+      const dewPoints = xmlToArray('temperature[type="dew point"] > value')
+        .map(n => parseInt(n.innerHTML))
+      
+      const windChills = xmlToArray('temperature[type="wind chill"] > value')
+        .map(n => parseInt(n.innerHTML))
+      
+      const probabilityOfPercipitations = xmlToArray('probability-of-precipitation > value')
+        .map(n => parseInt(n.innerHTML))
+
+      const weatherConditions = xmlToArray('weather-conditions > value')
+        .map(n => ({
+          type: n.getAttribute('weather-type'),
+          coverage: n.getAttribute('coverage'),
+        }))
+
+      const startTimes = xmlToArray('start-valid-time')
+        .map(n => n.innerHTML)
+
+      const endTimes = xmlToArray('end-valid-time')
+        .map(n => n.innerHTML)
+
+      return startTimes.map((startTime, i) => ({
+        startTime,
+        endTime: endTimes[i],
+        temperature: temperatures[i],
+        dewPoint: dewPoints[i],
+        windChill: windChills[i],
+        probabilityOfPercipitation: probabilityOfPercipitations[i],
+        weatherCondition: weatherConditions[i],
+      }))
+    }
+
+    // forecastPoints: {startTime: string, endTime: string, temperature: number, dewPoint: number, windChill: number, probabilityOfPercipitation: number, weatherCondition: {type: string, coverage: string}}[]
+    const drawSVG = (forecastPoints) => {
+      // clear existing svg.
+      document.querySelector('weather-forecast').innerHTML = ''
+
+      const weatherForecastContainer = document.querySelector('weather-forecast')
+
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+
+      const maxWidth = window.innerWidth
+      const maxHeight = window.innerHeight
+
+      svg.setAttribute('width', '100%')
+      svg.setAttribute('height', '100%')
+      svg.setAttribute('viewBox', `0 0 ${maxWidth} ${maxHeight}`)
+
+
+      const canvasPadding = 50
+
+      const canvasBounds = {
+        x: {
+          min: canvasPadding,
+          max: maxWidth - canvasPadding,
+          length: maxWidth - (canvasPadding * 2),
+        },
+        y: {
+          min: canvasPadding,
+          max: maxHeight - canvasPadding,
+          length: maxHeight - (canvasPadding * 2),
+        },
+      }
+
+
+      // Draw gridlines.
+      const maxTemperature = Math.max(
+        ...forecastPoints.map(forecastPoint => forecastPoint.temperature),
+        ...forecastPoints.map(forecastPoint => forecastPoint.dewPoint),
+        ...forecastPoints.map(forecastPoint => forecastPoint.windChill),
+      )
+
+      const minTemperature = Math.min(
+        ...forecastPoints.map(forecastPoint => forecastPoint.temperature),
+        ...forecastPoints.map(forecastPoint => forecastPoint.dewPoint),
+        ...forecastPoints.map(forecastPoint => forecastPoint.windChill),
+      )
+
+      const chartGridlineSpacing = 5
+      const chartMaxTemperature = Math.round(maxTemperature / chartGridlineSpacing) * chartGridlineSpacing + chartGridlineSpacing
+      const chartMinTemperature = Math.round(minTemperature / chartGridlineSpacing) * chartGridlineSpacing - chartGridlineSpacing
+      const chartTemperatureBounds = {
+        max: chartMaxTemperature,
+        min: chartMinTemperature,
+        length: chartMaxTemperature - chartMinTemperature,
+      }
+
+      for (let i = chartTemperatureBounds.min; i <= chartTemperatureBounds.max; i += 5) {
+        const y = canvasBounds.y.max - ((i - chartTemperatureBounds.min) / (chartTemperatureBounds.max - chartTemperatureBounds.min)) * canvasBounds.y.length
+
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+        line.setAttribute('x1', canvasBounds.x.min)
+        line.setAttribute('y1', y)
+        line.setAttribute('x2', canvasBounds.x.max)
+        line.setAttribute('y2', y)
+        line.classList.add('horizontal-gridline')
+        svg.appendChild(line)
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+        text.setAttribute('x', canvasBounds.x.min)
+        text.setAttribute('y', y)
+        text.setAttribute('text-anchor', 'end')
+        text.setAttribute('transform', 'translate(-10, 4)')
+        text.innerHTML = `${i}°`
+        text.classList.add('horizontal-gridline')
+        svg.appendChild(text)
+      }
+
+      // points: {x: number, y: number}[]
+      const drawPolyline = ({points, color= 'black', className}) => {
+        const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline')
+        polyline.setAttribute('points', points.map(p => `${p.x},${p.y}`).join(' '))
+        polyline.setAttribute('stroke', color)
+        polyline.setAttribute('fill', 'none')
+        polyline.classList.add(className)
+        svg.appendChild(polyline)
+      }
+
+      // Draw temperature line.
+      const drawTemperatureLine = ({propertyName, className}) => {
+        drawPolyline({
+          points: forecastPoints.map((forecastPoint, i) => ({
+            x: canvasBounds.x.min + canvasBounds.x.length * (i / (forecastPoints.length - 1)),
+            y: canvasBounds.y.max - canvasBounds.y.length * ((forecastPoint[propertyName] - chartTemperatureBounds.min) / chartTemperatureBounds.length)
+          })),
+          className
+        })
+      }
+
+      drawTemperatureLine({propertyName: 'temperature', className: 'temperature'})
+      drawTemperatureLine({propertyName: 'dewPoint', className: 'dew-point'})
+      drawTemperatureLine({propertyName: 'windChill', className: 'wind-chill'})
+
+      weatherForecastContainer.appendChild(svg)
+    }
+
+    xhr.onload = () => {
+      const forecastPoints = getForecastPointsFromXML()
+
+      twoDayForecastPoints = forecastPoints.slice(0, 48)
+      
+      drawSVG(twoDayForecastPoints)
+    }
+
+    xhr.open('GET',`https://forecast.weather.gov/MapClick.php?lat=${latitude}&lon=${longitude}&FcstType=digitalDWML`, true)
+    xhr.responseType = 'document'
+    xhr.send()
+
+  </script>
+</head>
+<body>
+  <weather-forecast></weather-forecast>
+</body>
+</html>
