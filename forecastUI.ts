@@ -99,7 +99,7 @@ const getTemperatureBounds = (forecastPoints: ForecastPoint[]): DimensionBounds 
   }
 }
 
-export function drawInterface ({
+export const drawInterface = ({
   screenElement,
   forecastPoints,
   previousScreenHandler = () => {},
@@ -113,7 +113,7 @@ export function drawInterface ({
   nextScreenHandler?: () => void
   zoomOutScreenHandler?: () => void
   zoomInScreenHandler?: () => void
-}) {
+}) => {
   
   if (!screenElement) {
     return

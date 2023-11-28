@@ -70,7 +70,7 @@ const getTemperatureBounds = (forecastPoints) => {
         length: chartMaxTemperature - chartMinTemperature,
     };
 };
-export function drawInterface({ screenElement, forecastPoints, previousScreenHandler = () => { }, nextScreenHandler = () => { }, zoomOutScreenHandler = () => { }, zoomInScreenHandler = () => { }, }) {
+export const drawInterface = ({ screenElement, forecastPoints, previousScreenHandler = () => { }, nextScreenHandler = () => { }, zoomOutScreenHandler = () => { }, zoomInScreenHandler = () => { }, }) => {
     if (!screenElement) {
         return;
     }
@@ -131,5 +131,5 @@ export function drawInterface({ screenElement, forecastPoints, previousScreenHan
         zoomInScreenHandler,
     }));
     screenElement.appendChild(svg);
-}
+};
 //# sourceMappingURL=forecastUI.js.map
