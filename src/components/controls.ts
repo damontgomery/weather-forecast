@@ -1,5 +1,25 @@
 import { InterfaceBounds } from "../forecastUI.js"
 
+type Coordinate = [number, number]
+
+const ControlButton = ({
+  points,
+  className,
+  clickHandler,
+}: {
+  points: Coordinate[]
+  className: string
+  clickHandler: () => void
+}) => {
+  const button = document.createElementNS('http://www.w3.org/2000/svg', 'polygon')
+  button.setAttribute('points', points.map(point => point.join(',')).join(' '))
+  button.classList.add('button')
+  button.classList.add(className)
+  button.addEventListener('click', clickHandler)
+
+  return button
+}
+
 export const Controls = ({
   canvasBounds,
   previousScreenHandler,
@@ -15,34 +35,51 @@ export const Controls = ({
 }): SVGElement => {
   const controls = document.createElementNS('http://www.w3.org/2000/svg', 'g')
   controls.classList.add('buttons')
-  
-  const leftButton = document.createElementNS('http://www.w3.org/2000/svg', 'polygon')
-  leftButton.setAttribute('points', `0,0 ${canvasBounds.global.x.max / 2},${canvasBounds.global.y.max / 2} 0,${canvasBounds.global.y.max}`)
-  leftButton.classList.add('button')
-  leftButton.classList.add('previous')
-  leftButton.addEventListener('click', previousScreenHandler)
-  controls.appendChild(leftButton)
 
-  const rightButton = document.createElementNS('http://www.w3.org/2000/svg', 'polygon')
-  rightButton.setAttribute('points', `${canvasBounds.global.x.max},0 ${canvasBounds.global.x.max / 2},${canvasBounds.global.y.max / 2} ${canvasBounds.global.x.max},${canvasBounds.global.y.max}`)
-  rightButton.classList.add('button')
-  rightButton.classList.add('next')
-  rightButton.addEventListener('click', nextScreenHandler)
-  controls.appendChild(rightButton)
+  const centerPoint: Coordinate = [
+    canvasBounds.global.x.max / 2,
+    canvasBounds.global.y.max / 2,
+  ]
 
-  const zoomOutButton = document.createElementNS('http://www.w3.org/2000/svg', 'polygon')
-  zoomOutButton.setAttribute('points', `0,${canvasBounds.global.y.max} ${canvasBounds.global.x.max / 2},${canvasBounds.global.y.max / 2} ${canvasBounds.global.x.max},${canvasBounds.global.y.max}`)
-  zoomOutButton.classList.add('button')
-  zoomOutButton.classList.add('zoom-out')
-  zoomOutButton.addEventListener('click', zoomOutScreenHandler)
-  controls.appendChild(zoomOutButton)
+  controls.appendChild(ControlButton({
+    points: [
+      [0, 0],
+      centerPoint,
+      [0, canvasBounds.global.y.max],
+    ],
+    className: 'previous',
+    clickHandler: previousScreenHandler,
+  }))
 
-  const zoomInButton = document.createElementNS('http://www.w3.org/2000/svg', 'polygon')
-  zoomInButton.setAttribute('points', `0,0 ${canvasBounds.global.x.max / 2},${canvasBounds.global.y.max / 2} ${canvasBounds.global.x.max},0`)
-  zoomInButton.classList.add('button')
-  zoomInButton.classList.add('zoom-in')
-  zoomInButton.addEventListener('click', zoomInScreenHandler)
-  controls.appendChild(zoomInButton)
+  controls.appendChild(ControlButton({
+    points: [
+      [canvasBounds.global.x.max, 0],
+      centerPoint,
+      [canvasBounds.global.x.max, canvasBounds.global.y.max],
+    ],
+    className: 'next',
+    clickHandler: nextScreenHandler,
+  }))
+
+  controls.appendChild(ControlButton({
+    points: [
+      [0, canvasBounds.global.y.max],
+      centerPoint,
+      [canvasBounds.global.x.max, canvasBounds.global.y.max],
+    ],
+    className: 'zoom-out',
+    clickHandler: zoomOutScreenHandler,
+  }))
+
+  controls.appendChild(ControlButton({
+    points: [
+      [0, 0],
+      centerPoint,
+      [canvasBounds.global.x.max, 0],
+    ],
+    className: 'zoom-in',
+    clickHandler: zoomInScreenHandler,
+  }))
 
   return controls
 }
