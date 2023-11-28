@@ -98,6 +98,10 @@ line.vertical-gridline {
   stroke-width: 1;
 }
 
+line.vertical-gridline.midnight {
+  stroke-width: 3;
+}
+
 text.vertical-gridline {
   font: normal 24px sans-serif;
   fill: black;

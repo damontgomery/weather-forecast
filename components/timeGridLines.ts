@@ -43,6 +43,9 @@ export const TimeGridLines = ({
     temperatureGridline.setAttribute('y2', `${canvasBounds.temperatureCanvas.y.max}`)
     temperatureGridline.classList.add('vertical-gridline')
     temperatureGridline.classList.add('temperature')
+    if (startTime.getHours() == 0) {
+      temperatureGridline.classList.add('midnight')
+    }
     timeGridLines.appendChild(temperatureGridline)
 
     const precipitationGridline = document.createElementNS('http://www.w3.org/2000/svg', 'line')
@@ -52,6 +55,9 @@ export const TimeGridLines = ({
     precipitationGridline.setAttribute('y2', `${canvasBounds.precipitationCanvas.y.max}`)
     precipitationGridline.classList.add('vertical-gridline')
     precipitationGridline.classList.add('precipitation')
+    if (startTime.getHours() == 0) {
+      precipitationGridline.classList.add('midnight')
+    }
     timeGridLines.appendChild(precipitationGridline)
 
     const text = document.createElementNS('http://www.w3.org/2000/svg', 'text')
