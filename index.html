@@ -21,6 +21,10 @@
       stroke-linejoin: round;
     }
 
+    polygon {
+      opacity: 0;
+    }
+
     body {
       --temperature-color: #F57700;
       --dew-point-color: #00C2F5;
@@ -31,6 +35,11 @@
 
     polyline.temperature {
       stroke: var(--temperature-color);
+    }
+
+    .time-labels text {
+      font: normal 24px sans-serif;
+      text-transform: lowercase;
     }
 
     .legend text {
@@ -115,8 +124,68 @@
       longitude = parseFloat(queryParameters.get('lon'))
     }
 
+    /**
+     * A forecast point
+     * @typedef {Object} ForecastPoint
+     * @property {string} startTime
+     * @property {string} endTime
+     * @property {number} temperature
+     * @property {number} dewPoint
+     * @property {number} windChill
+     * @property {number} probabilityOfPercipitation
+     * @property {{type: string, coverage: string}} weatherCondition
+     */
+
+    /** @type {ForecastPoint}[] */
+    let forecastPoints = []
+    let selectedForecastPointsPerScreen = 24
+    let selectedScreen = 6
+
+    const previousScreenHandler = () => {
+      selectedScreen = Math.max(0, selectedScreen - 1)
+      drawSVG()
+    }
+
+    const nextScreenHandler = () => {
+      selectedScreen = Math.min(
+        Math.floor(forecastPoints.length / selectedForecastPointsPerScreen) - 1,
+        selectedScreen + 1
+      )
+      drawSVG()
+    }
+
+    const zoomOutScreenHandler = () => {
+      selectedForecastPointsPerScreen = Math.min(forecastPoints.length, selectedForecastPointsPerScreen * 2)
+
+      let projectedLastForecastedPoint
+      let projectedFirstForecastedPoint
+
+      const projectForecastedPoints = () => {
+        projectedLastForecastedPoint = (selectedScreen + 1) * selectedForecastPointsPerScreen
+        projectedFirstForecastedPoint = projectedLastForecastedPoint - selectedForecastPointsPerScreen
+      }
+
+      projectForecastedPoints()
+      
+      while(projectedLastForecastedPoint > forecastPoints.length || projectedFirstForecastedPoint < 0) {
+        selectedScreen--
+        projectForecastedPoints()
+      }
+
+      drawSVG()
+    }
+
+    const zoomInScreenHandler = () => {
+      selectedForecastPointsPerScreen = Math.max(1, selectedForecastPointsPerScreen / 2)
+
+      drawSVG()
+    }
+
     const xhr = new XMLHttpRequest()
     
+    /**
+     * @returns {ForecastPoint[]}
+     */
     const getForecastPointsFromXML = () => {
       const xmlToArray = q => Array.from(xhr.responseXML.documentElement.querySelectorAll(q))
 
@@ -165,12 +234,16 @@
       }))
     }
 
-    // forecastPoints: {startTime: string, endTime: string, temperature: number, dewPoint: number, windChill: number, probabilityOfPercipitation: number, weatherCondition: {type: string, coverage: string}}[]
-    const drawSVG = (forecastPoints) => {
-      // clear existing svg.
-      document.querySelector('weather-forecast').innerHTML = ''
+    
+    const drawSVG = () => {
+      const selectedForecastPoints = forecastPoints.slice(selectedScreen * selectedForecastPointsPerScreen, (selectedScreen + 1) * selectedForecastPointsPerScreen)
+
+      console.log(selectedScreen, selectedForecastPointsPerScreen)
 
       const weatherForecastContainer = document.querySelector('weather-forecast')
+      
+      // clear existing svg.
+      weatherForecastContainer.innerHTML = ''
 
       const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
 
@@ -211,15 +284,38 @@
         },
       }
 
-      // Draw gridlines.
+      // Draw start time.
+      const timeLabels = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+      timeLabels.classList.add('time-labels')
+      
+      const startTime = new Date(selectedForecastPoints[0].startTime)
+      const startTimeLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+      startTimeLabel.setAttribute('x', temperatureCanvasBounds.x.min)
+      startTimeLabel.setAttribute('y', temperatureCanvasBounds.y.min)
+      startTimeLabel.setAttribute('text-anchor', 'start')
+      startTimeLabel.setAttribute('transform', 'translate(0, -18)')
+      startTimeLabel.innerHTML = startTime.toLocaleString('en-US', {weekday: 'long', month: '2-digit', day: 'numeric'})
+      startTimeLabel.classList.add('time-label')
+      startTimeLabel.classList.add('start')
+      timeLabels.appendChild(startTimeLabel)
+
+      const endTime = new Date(selectedForecastPoints[selectedForecastPoints.length - 1].endTime)
+      const endTimeLabel = startTimeLabel.cloneNode(true)
+      endTimeLabel.setAttribute('text-anchor', 'end')
+      endTimeLabel.setAttribute('transform', `translate(${temperatureCanvasBounds.x.length}, -18)`)
+      endTimeLabel.innerHTML = endTime.toLocaleString('en-US', {weekday: 'long', month: '2-digit', day: 'numeric'})
+      endTimeLabel.classList.add('end')
+      timeLabels.appendChild(endTimeLabel)
+
+      svg.appendChild(timeLabels)
 
       // Draw time gridlines.
-      forecastPoints.forEach((forecastPoint, i) => {
+      selectedForecastPoints.forEach((forecastPoint, i) => {
         const startTime = new Date(forecastPoint.startTime)
 
         const shouldDrawLabel = (
           i == 0 ||
-          i == forecastPoints.length - 1 ||
+          i == selectedForecastPoints.length - 1 ||
           startTime.getHours() % 3 == 0
         )
 
@@ -227,7 +323,7 @@
           return
         }
 
-        const x = temperatureCanvasBounds.x.min + temperatureCanvasBounds.x.length * (i / (forecastPoints.length - 1))
+        const x = temperatureCanvasBounds.x.min + temperatureCanvasBounds.x.length * (i / (selectedForecastPoints.length - 1))
 
         const temperatureGridline = document.createElementNS('http://www.w3.org/2000/svg', 'line')
         temperatureGridline.setAttribute('x1', x)
@@ -259,9 +355,9 @@
 
       // Draw Temperature gridlines.
       const temperatures = [
-        ...forecastPoints.map(forecastPoint => forecastPoint.temperature),
-        ...forecastPoints.map(forecastPoint => forecastPoint.dewPoint),
-        ...forecastPoints.map(forecastPoint => forecastPoint.windChill),
+        ...selectedForecastPoints.map(forecastPoint => forecastPoint.temperature),
+        ...selectedForecastPoints.map(forecastPoint => forecastPoint.dewPoint),
+        ...selectedForecastPoints.map(forecastPoint => forecastPoint.windChill),
       ].filter(n => !isNaN(n))
 
       const minTemperature = Math.min(...temperatures)
@@ -318,8 +414,8 @@
       // Draw temperature line.
       const drawTemperatureLine = ({propertyName, className}) => {
         drawPolyline({
-          points: forecastPoints.map((forecastPoint, i) => ({
-            x: temperatureCanvasBounds.x.min + temperatureCanvasBounds.x.length * (i / (forecastPoints.length - 1)),
+          points: selectedForecastPoints.map((forecastPoint, i) => ({
+            x: temperatureCanvasBounds.x.min + temperatureCanvasBounds.x.length * (i / (selectedForecastPoints.length - 1)),
             y: temperatureCanvasBounds.y.max - temperatureCanvasBounds.y.length * ((forecastPoint[propertyName] - chartTemperatureBounds.min) / chartTemperatureBounds.length)
           })),
           className
@@ -390,7 +486,7 @@
 
       const drawPrecipitationLine = ({propertyName, className}) => {
         drawPolyline({
-          points: forecastPoints.map((forecastPoint, i) => {
+          points: selectedForecastPoints.map((forecastPoint, i) => {
             // weatherCondition: {type: string, coverage: string}
             const weatherCondition = forecastPoint.weatherCondition
 
@@ -401,7 +497,7 @@
             }
             
             return {
-              x: precipitationCanvasBounds.x.min + precipitationCanvasBounds.x.length * (i / (forecastPoints.length - 1)),
+              x: precipitationCanvasBounds.x.min + precipitationCanvasBounds.x.length * (i / (selectedForecastPoints.length - 1)),
               y: precipitationCanvasBounds.y.max - precipitationCanvasBounds.y.length * (value / (precipitationCoverageLabelToValueMap.size - 1))
             }
           }),
@@ -414,8 +510,6 @@
 
       // Draw legend.
       const legend = document.createElementNS('http://www.w3.org/2000/svg', 'g')
-      legend.setAttribute('x', 100)
-      legend.setAttribute('y', 100)
       legend.classList.add('legend')
       legend.setAttribute('transform', `translate(${canvasPadding} ${maxHeight - (canvasPadding / 2) + 15})`);
       svg.appendChild(legend)
@@ -441,18 +535,50 @@
       addLegendLabel({label: 'Snow', className: 'snow', offset: legendLabelWidth * 3})
       addLegendLabel({label: 'Rain', className: 'rain', offset: legendLabelWidth * 4})
 
+      // Draw buttons.
+      const buttonContainer = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+      buttonContainer.classList.add('buttons')
+      
+      const leftButton = document.createElementNS('http://www.w3.org/2000/svg', 'polygon')
+      leftButton.setAttribute('points', `0,0 ${maxWidth / 2},${maxHeight / 2} 0,${maxHeight}`)
+      leftButton.classList.add('button')
+      leftButton.classList.add('previous')
+      leftButton.addEventListener('click', previousScreenHandler)
+      buttonContainer.appendChild(leftButton)
+
+      const rightButton = document.createElementNS('http://www.w3.org/2000/svg', 'polygon')
+      rightButton.setAttribute('points', `${maxWidth},0 ${maxWidth / 2},${maxHeight / 2} ${maxWidth},${maxHeight}`)
+      rightButton.classList.add('button')
+      rightButton.classList.add('next')
+      rightButton.addEventListener('click', nextScreenHandler)
+      buttonContainer.appendChild(rightButton)
+
+      const zoomOutButton = document.createElementNS('http://www.w3.org/2000/svg', 'polygon')
+      zoomOutButton.setAttribute('points', `0,${maxHeight} ${maxWidth / 2},${maxHeight / 2} ${maxWidth},${maxHeight}`)
+      zoomOutButton.classList.add('button')
+      zoomOutButton.classList.add('zoom-out')
+      zoomOutButton.addEventListener('click', zoomOutScreenHandler)
+      buttonContainer.appendChild(zoomOutButton)
+
+      const zoomInButton = document.createElementNS('http://www.w3.org/2000/svg', 'polygon')
+      zoomInButton.setAttribute('points', `0,0 ${maxWidth / 2},${maxHeight / 2} ${maxWidth},0`)
+      zoomInButton.classList.add('button')
+      zoomInButton.classList.add('zoom-in')
+      zoomInButton.addEventListener('click', zoomInScreenHandler)
+      buttonContainer.appendChild(zoomInButton)
+
+      svg.appendChild(buttonContainer)
+
       weatherForecastContainer.appendChild(svg)
     }
 
     xhr.onload = () => {
-      const forecastPoints = getForecastPointsFromXML()
+      forecastPoints = getForecastPointsFromXML()
 
-      twoDayForecastPoints = forecastPoints.slice(0, 48)
-      
-      drawSVG(twoDayForecastPoints)
+      drawSVG()
 
       window.onresize = () => {
-        drawSVG(twoDayForecastPoints)
+        drawSVG()
       }
     }
 
