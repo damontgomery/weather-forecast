@@ -1,5 +1,6 @@
+import { DimensionBounds, CanvasBounds } from '../app.js'
 import { ForecastPoint } from '../weatherGovApi.js'
-import { DimensionBounds, InterfaceBounds } from '../forecastUI.js'
+import { DividedCanvasBounds } from './forecast.js'
 import { Polyline } from './polyline.js'
 
 export const TemperatureLine = ({
@@ -12,13 +13,13 @@ export const TemperatureLine = ({
   propertyName: string
   className: string
   forecastPoints: ForecastPoint[]
-  canvasBounds: InterfaceBounds
+  canvasBounds: CanvasBounds
   temperatureBounds: DimensionBounds
 }): SVGPolylineElement => Polyline({
   points: forecastPoints.map((forecastPoint, i) => ({
-    x: canvasBounds.temperatureCanvas.x.min + canvasBounds.temperatureCanvas.x.length * (i / (forecastPoints.length - 1)),
+    x: canvasBounds.x.min + canvasBounds.x.length * (i / (forecastPoints.length - 1)),
     // @ts-ignore
-    y: canvasBounds.temperatureCanvas.y.max - canvasBounds.temperatureCanvas.y.length * ((forecastPoint[propertyName] - temperatureBounds.min) / temperatureBounds.length)
+    y: canvasBounds.y.max - canvasBounds.y.length * ((forecastPoint[propertyName] - temperatureBounds.min) / temperatureBounds.length)
   })),
   className
 })

@@ -1,12 +1,16 @@
 import { ForecastPoint } from '../weatherGovApi.js'
-import { InterfaceBounds } from '../forecastUI.js'
+import { CanvasBounds } from '../app.js'
 
 export const TimeGridLines = ({
   forecastPoints,
-  canvasBounds
+  globalCanvasBounds,
+  temperatureCanvasBounds,
+  precipitationCanvasBounds,
 }: {
   forecastPoints: ForecastPoint[]
-  canvasBounds: InterfaceBounds
+  globalCanvasBounds: CanvasBounds
+  temperatureCanvasBounds: CanvasBounds
+  precipitationCanvasBounds: CanvasBounds
 }): SVGElement => {
   const timeGridLines = document.createElementNS('http://www.w3.org/2000/svg', 'g')
   timeGridLines.classList.add('time-gridlines')
@@ -34,13 +38,13 @@ export const TimeGridLines = ({
       return
     }
 
-    const x = canvasBounds.temperatureCanvas.x.min + canvasBounds.temperatureCanvas.x.length * (i / (forecastPoints.length - 1))
+    const x = temperatureCanvasBounds.x.min + temperatureCanvasBounds.x.length * (i / (forecastPoints.length - 1))
 
     const temperatureGridline = document.createElementNS('http://www.w3.org/2000/svg', 'line')
     temperatureGridline.setAttribute('x1', `${x}`)
-    temperatureGridline.setAttribute('y1', `${canvasBounds.temperatureCanvas.y.min}`)
+    temperatureGridline.setAttribute('y1', `${temperatureCanvasBounds.y.min}`)
     temperatureGridline.setAttribute('x2', `${x}`)
-    temperatureGridline.setAttribute('y2', `${canvasBounds.temperatureCanvas.y.max}`)
+    temperatureGridline.setAttribute('y2', `${temperatureCanvasBounds.y.max}`)
     temperatureGridline.classList.add('vertical-gridline')
     temperatureGridline.classList.add('temperature')
     if (startTime.getHours() == 0) {
@@ -50,9 +54,9 @@ export const TimeGridLines = ({
 
     const precipitationGridline = document.createElementNS('http://www.w3.org/2000/svg', 'line')
     precipitationGridline.setAttribute('x1', `${x}`)
-    precipitationGridline.setAttribute('y1', `${canvasBounds.precipitationCanvas.y.min}`)
+    precipitationGridline.setAttribute('y1', `${precipitationCanvasBounds.y.min}`)
     precipitationGridline.setAttribute('x2', `${x}`)
-    precipitationGridline.setAttribute('y2', `${canvasBounds.precipitationCanvas.y.max}`)
+    precipitationGridline.setAttribute('y2', `${precipitationCanvasBounds.y.max}`)
     precipitationGridline.classList.add('vertical-gridline')
     precipitationGridline.classList.add('precipitation')
     if (startTime.getHours() == 0) {
@@ -62,9 +66,9 @@ export const TimeGridLines = ({
 
     const text = document.createElementNS('http://www.w3.org/2000/svg', 'text')
     text.setAttribute('x', `${x}`)
-    text.setAttribute('y', `${canvasBounds.global.y.max * (2/3)}`)
+    text.setAttribute('y', `${globalCanvasBounds.y.max * (2/3)}`)
     text.setAttribute('text-anchor', 'end')
-    text.setAttribute('transform', `rotate(-90 ${x} ${canvasBounds.global.y.max * (2/3)}) translate(30, 5)`)
+    text.setAttribute('transform', `rotate(-90 ${x} ${globalCanvasBounds.y.max * (2/3)}) translate(30, 5)`)
     text.innerHTML = startTime.toLocaleString('en-US', {hour: 'numeric', hour12: true})
     text.classList.add('vertical-gridline')
     timeGridLines.appendChild(text)

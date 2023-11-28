@@ -1,7 +1,7 @@
 import { ForecastPoint } from '../weatherGovApi.js'
-import { InterfaceBounds } from '../forecastUI.js'
+import { CanvasBounds } from '../app.js'
 import { Polyline } from './polyline.js'
-import { PrecipitationCoverageValue, precipitationCoverageLabelToValueMap } from './precipitation.js'
+import { PrecipitationCoverageValue, precipitationCoverageLabelToValueMap } from '../precipitation.js'
 
 export const PrecipitationLine = ({
   propertyName,
@@ -12,7 +12,7 @@ export const PrecipitationLine = ({
   propertyName: string
   className: string
   forecastPoints: ForecastPoint[]
-  canvasBounds: InterfaceBounds
+  canvasBounds: CanvasBounds
 }): SVGPolylineElement => Polyline({
   points: forecastPoints.map((forecastPoint, i) => {
     const weatherCondition = forecastPoint.weatherCondition
@@ -27,8 +27,8 @@ export const PrecipitationLine = ({
     }
     
     return {
-      x: canvasBounds.precipitationCanvas.x.min + canvasBounds.precipitationCanvas.x.length * (i / (forecastPoints.length - 1)),
-      y: canvasBounds.precipitationCanvas.y.max - canvasBounds.precipitationCanvas.y.length * (value / (precipitationCoverageLabelToValueMap.size - 1))
+      x: canvasBounds.x.min + canvasBounds.x.length * (i / (forecastPoints.length - 1)),
+      y: canvasBounds.y.max - canvasBounds.y.length * (value / (precipitationCoverageLabelToValueMap.size - 1))
     }
   }),
   className

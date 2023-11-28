@@ -1,5 +1,6 @@
 import { ForecastPoint, fetchWeatherForecastData } from './weatherGovApi.js'
-import { drawInterface } from './forecastUI.js'
+import { Forecast } from './components/forecast.js'
+import { Controls } from './components/controls.js'
 
 const weatherForecastContainer = document.querySelector('weather-forecast') as HTMLElement | null
 let forecastPoints: ForecastPoint[] = []
@@ -12,21 +13,10 @@ const getSelectedForecastPoints = () => forecastPoints
     (selectedScreen + 1) * selectedForecastPointsPerScreen
   )
 
-const refreshUI = () => {
-  drawInterface({
-    screenElement: weatherForecastContainer ?? undefined,
-    forecastPoints: getSelectedForecastPoints(),
-    previousScreenHandler,
-    nextScreenHandler,
-    zoomOutScreenHandler,
-    zoomInScreenHandler,
-  })
-}
-
 const previousScreenHandler = () => {
   selectedScreen = Math.max(0, selectedScreen - 1)
 
-  refreshUI()
+  render()
 }
 
 const nextScreenHandler = () => {
@@ -34,7 +24,7 @@ const nextScreenHandler = () => {
     Math.floor(forecastPoints.length / selectedForecastPointsPerScreen) - 1,
     selectedScreen + 1
   )
-  refreshUI()
+  render()
 }
 
 // @todo can we generalize this more?
@@ -67,7 +57,7 @@ const zoomOutScreenHandler = () => {
 
   adjustForOutOfBoundsPointsAfterZoom()
 
-  refreshUI()
+  render()
 }
 
 const zoomInScreenHandler = () => {
@@ -77,15 +67,69 @@ const zoomInScreenHandler = () => {
     Math.floor(selectedForecastPointsPerScreen / 2)
   )
 
-  refreshUI()
+  render()
+}
+
+export interface DimensionBounds {
+  min: number
+  max: number
+  length: number
+}
+
+export interface CanvasBounds {
+  x: DimensionBounds
+  y: DimensionBounds
+}
+
+const render = () => {
+  if (!weatherForecastContainer) {
+    return
+  }
+
+  // clear existing svg.
+  weatherForecastContainer.innerHTML = ''
+
+  const canvasBounds: CanvasBounds = {
+    x: {
+      min: 0,
+      max: window.innerWidth,
+      length: window.innerWidth,
+    },
+    y: {
+      min: 0,
+      max: window.innerHeight,
+      length: window.innerHeight,
+    },
+  }
+
+  const app = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+  app.setAttribute('class', 'app')
+  app.setAttribute('width', '100%')
+  app.setAttribute('height', '100%')
+  app.setAttribute('viewBox', `0 0 ${canvasBounds.x.max} ${canvasBounds.y.max}`)
+
+  app.appendChild(Forecast({
+    forecastPoints: getSelectedForecastPoints(),
+    globalCanvasBounds: canvasBounds,
+  }))
+
+  app.appendChild(Controls({
+    canvasBounds,
+    previousScreenHandler,
+    nextScreenHandler,
+    zoomOutScreenHandler,
+    zoomInScreenHandler,
+  }))
+
+  weatherForecastContainer.appendChild(app)
 }
 
 fetchWeatherForecastData().then(points => {
   forecastPoints = points
   
-  refreshUI()
+  render()
 
   window.onresize = () => {
-    refreshUI()
+    render()
   }
 })

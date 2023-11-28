@@ -1,9 +1,15 @@
-import { InterfaceBounds } from "../forecastUI.js";
+import { CanvasBounds } from '../app.js'
 
-export const Legend = ({ canvasBounds}: {canvasBounds: InterfaceBounds}): SVGElement => {
+export const Legend = ({
+  canvasBounds,
+  canvasPadding,
+}: {
+  canvasBounds: CanvasBounds
+  canvasPadding: number
+}): SVGElement => {
   const legend = document.createElementNS('http://www.w3.org/2000/svg', 'g')
   legend.classList.add('legend')
-  legend.setAttribute('transform', `translate(${canvasBounds.canvasPadding} ${canvasBounds.global.y.max - (canvasBounds.canvasPadding / 2) + 15})`);
+  legend.setAttribute('transform', `translate(${canvasPadding} ${canvasBounds.y.max - (canvasPadding / 2) + 15})`);
 
   const addLegendLabel = ({label, className, offset}: {
     label: string

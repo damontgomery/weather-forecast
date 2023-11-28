@@ -1,4 +1,4 @@
-import { InterfaceBounds } from "../forecastUI.js"
+import { CanvasBounds } from "../app.js"
 
 type Coordinate = [number, number]
 
@@ -27,7 +27,7 @@ export const Controls = ({
   zoomOutScreenHandler,
   zoomInScreenHandler,
 }: {
-  canvasBounds: InterfaceBounds
+  canvasBounds: CanvasBounds
   previousScreenHandler: () => void
   nextScreenHandler: () => void
   zoomOutScreenHandler: () => void
@@ -37,15 +37,15 @@ export const Controls = ({
   controls.classList.add('buttons')
 
   const centerPoint: Coordinate = [
-    canvasBounds.global.x.max / 2,
-    canvasBounds.global.y.max / 2,
+    canvasBounds.x.max / 2,
+    canvasBounds.y.max / 2,
   ]
 
   controls.appendChild(ControlButton({
     points: [
       [0, 0],
       centerPoint,
-      [0, canvasBounds.global.y.max],
+      [0, canvasBounds.y.max],
     ],
     className: 'previous',
     clickHandler: previousScreenHandler,
@@ -53,9 +53,9 @@ export const Controls = ({
 
   controls.appendChild(ControlButton({
     points: [
-      [canvasBounds.global.x.max, 0],
+      [canvasBounds.x.max, 0],
       centerPoint,
-      [canvasBounds.global.x.max, canvasBounds.global.y.max],
+      [canvasBounds.x.max, canvasBounds.y.max],
     ],
     className: 'next',
     clickHandler: nextScreenHandler,
@@ -63,9 +63,9 @@ export const Controls = ({
 
   controls.appendChild(ControlButton({
     points: [
-      [0, canvasBounds.global.y.max],
+      [0, canvasBounds.y.max],
       centerPoint,
-      [canvasBounds.global.x.max, canvasBounds.global.y.max],
+      [canvasBounds.x.max, canvasBounds.y.max],
     ],
     className: 'zoom-out',
     clickHandler: zoomOutScreenHandler,
@@ -75,7 +75,7 @@ export const Controls = ({
     points: [
       [0, 0],
       centerPoint,
-      [canvasBounds.global.x.max, 0],
+      [canvasBounds.x.max, 0],
     ],
     className: 'zoom-in',
     clickHandler: zoomInScreenHandler,
