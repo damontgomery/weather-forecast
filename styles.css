@@ -31,7 +31,7 @@ polyline.temperature {
   stroke: var(--temperature-color);
 }
 
-.time-labels text {
+.date-labels text {
   font: normal 24px sans-serif;
   text-transform: lowercase;
 }
