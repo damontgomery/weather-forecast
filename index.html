@@ -139,7 +139,7 @@
     /** @type {ForecastPoint}[] */
     let forecastPoints = []
     let selectedForecastPointsPerScreen = 24
-    let selectedScreen = 6
+    let selectedScreen = 0
 
     const previousScreenHandler = () => {
       selectedScreen = Math.max(0, selectedScreen - 1)
@@ -176,7 +176,8 @@
     }
 
     const zoomInScreenHandler = () => {
-      selectedForecastPointsPerScreen = Math.max(1, selectedForecastPointsPerScreen / 2)
+      // Min is 2 since we need to display a line, not just a point.
+      selectedForecastPointsPerScreen = Math.max(2, Math.floor(selectedForecastPointsPerScreen / 2))
 
       drawSVG()
     }
@@ -237,8 +238,6 @@
     
     const drawSVG = () => {
       const selectedForecastPoints = forecastPoints.slice(selectedScreen * selectedForecastPointsPerScreen, (selectedScreen + 1) * selectedForecastPointsPerScreen)
-
-      console.log(selectedScreen, selectedForecastPointsPerScreen)
 
       const weatherForecastContainer = document.querySelector('weather-forecast')
       
@@ -313,10 +312,20 @@
       selectedForecastPoints.forEach((forecastPoint, i) => {
         const startTime = new Date(forecastPoint.startTime)
 
+        let labelGap = Math.ceil(selectedForecastPoints.length / 8)
+
+        // This seems to work once we get really zoomed out.
+        if (labelGap > 12) {
+          labelGap = 24
+        }
+        else if (labelGap > 6) {
+          labelGap = 12
+        }
+
         const shouldDrawLabel = (
           i == 0 ||
           i == selectedForecastPoints.length - 1 ||
-          startTime.getHours() % 3 == 0
+          startTime.getHours() % labelGap == 0
         )
 
         if (!shouldDrawLabel) {
