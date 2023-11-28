@@ -1,6 +1,33 @@
 import { ForecastPoint } from '../weatherGovApi.js'
 import { CanvasBounds } from '../app.js'
 
+const TimeGridline = ({
+  x,
+  yMin,
+  yMax,
+  hours,
+  className,
+}: {
+  x: number
+  yMin: number
+  yMax: number
+  hours: number
+  className: string
+}): SVGElement => {
+  const gridline = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+  gridline.setAttribute('x1', `${x}`)
+  gridline.setAttribute('y1', `${yMin}`)
+  gridline.setAttribute('x2', `${x}`)
+  gridline.setAttribute('y2', `${yMax}`)
+  gridline.classList.add('vertical-gridline')
+  gridline.classList.add(className)
+  if (hours == 0) {
+    gridline.classList.add('midnight')
+  }
+
+  return gridline
+}
+
 export const TimeGridLines = ({
   forecastPoints,
   globalCanvasBounds,
@@ -40,29 +67,21 @@ export const TimeGridLines = ({
 
     const x = temperatureCanvasBounds.x.min + temperatureCanvasBounds.x.length * (i / (forecastPoints.length - 1))
 
-    const temperatureGridline = document.createElementNS('http://www.w3.org/2000/svg', 'line')
-    temperatureGridline.setAttribute('x1', `${x}`)
-    temperatureGridline.setAttribute('y1', `${temperatureCanvasBounds.y.min}`)
-    temperatureGridline.setAttribute('x2', `${x}`)
-    temperatureGridline.setAttribute('y2', `${temperatureCanvasBounds.y.max}`)
-    temperatureGridline.classList.add('vertical-gridline')
-    temperatureGridline.classList.add('temperature')
-    if (startTime.getHours() == 0) {
-      temperatureGridline.classList.add('midnight')
-    }
-    timeGridLines.appendChild(temperatureGridline)
+    timeGridLines.appendChild(TimeGridline({
+      x,
+      yMin: temperatureCanvasBounds.y.min,
+      yMax: temperatureCanvasBounds.y.max,
+      hours: startTime.getHours(),
+      className: 'temperature',
+    }))
 
-    const precipitationGridline = document.createElementNS('http://www.w3.org/2000/svg', 'line')
-    precipitationGridline.setAttribute('x1', `${x}`)
-    precipitationGridline.setAttribute('y1', `${precipitationCanvasBounds.y.min}`)
-    precipitationGridline.setAttribute('x2', `${x}`)
-    precipitationGridline.setAttribute('y2', `${precipitationCanvasBounds.y.max}`)
-    precipitationGridline.classList.add('vertical-gridline')
-    precipitationGridline.classList.add('precipitation')
-    if (startTime.getHours() == 0) {
-      precipitationGridline.classList.add('midnight')
-    }
-    timeGridLines.appendChild(precipitationGridline)
+    timeGridLines.appendChild(TimeGridline({
+      x,
+      yMin: precipitationCanvasBounds.y.min,
+      yMax: precipitationCanvasBounds.y.max,
+      hours: startTime.getHours(),
+      className: 'precipitation',
+    }))
 
     const text = document.createElementNS('http://www.w3.org/2000/svg', 'text')
     text.setAttribute('x', `${x}`)
