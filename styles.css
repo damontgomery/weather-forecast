@@ -1,0 +1,105 @@
+body {
+  font-family: sans-serif;
+}
+
+line {
+  stroke: 2;
+  stroke: black;
+  stroke-linecap: round;
+}
+
+polyline {
+  stroke-width: 20px;
+  stroke-linecap: round;
+  opacity: 0.7;
+  stroke-linejoin: round;
+}
+
+polygon {
+  opacity: 0;
+}
+
+body {
+  --temperature-color: #F57700;
+  --dew-point-color: #00C2F5;
+  --wind-chill-color: #7ED800;
+  --snow-color: #8C35A0;
+  --rain-color: #00C2F5;
+}
+
+polyline.temperature {
+  stroke: var(--temperature-color);
+}
+
+.time-labels text {
+  font: normal 24px sans-serif;
+  text-transform: lowercase;
+}
+
+.legend text {
+  font: normal 24px sans-serif;
+  text-transform: lowercase;
+}
+
+.legend > .temperature {
+  fill: var(--temperature-color);
+}
+
+polyline.dew-point {
+  stroke: var(--dew-point-color);
+}
+
+.legend > .dew-point {
+  fill: var(--dew-point-color);
+}
+
+polyline.wind-chill {
+  stroke: var(--wind-chill-color);
+}
+
+.legend > .wind-chill {
+  fill: var(--wind-chill-color);
+}
+
+polyline.snow {
+  stroke: var(--snow-color);
+}
+
+.legend > .snow {
+  fill: var(--snow-color);
+}
+
+polyline.rain {
+  stroke: var(--rain-color);
+}
+
+.legend > .rain {
+  fill: var(--rain-color);
+}
+
+line.horizontal-gridline {
+  stroke: black;
+  opacity: 0.5;
+  stroke-width: 3px;
+  stroke-dasharray: 20;
+}
+
+text.horizontal-gridline {
+  font: normal 24px sans-serif;
+  fill: black;
+  stroke: white;
+  stroke-width: 12px;
+  paint-order: stroke;
+}
+
+line.vertical-gridline {
+  stroke: black;
+  opacity: 0.5;
+  stroke-width: 1;
+}
+
+text.vertical-gridline {
+  font: normal 24px sans-serif;
+  fill: black;
+  text-transform: lowercase;
+}
