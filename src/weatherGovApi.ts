@@ -18,26 +18,26 @@ export interface ForecastPoint {
 }
 
 const getForecastPointsFromXML = (responseXML: Document | null): ForecastPoint[] => {
-  const xmlToArray = (q:string) => {
+  const getElementsFromXML = (selectors: string) => {
     if (responseXML === null) {
       return []
     }
-    return Array.from(responseXML.documentElement.querySelectorAll(q))
+    return Array.from(responseXML.documentElement.querySelectorAll(selectors))
   }
 
-  const temperatures = xmlToArray('temperature[type="hourly"] > value')
+  const temperatures = getElementsFromXML('temperature[type="hourly"] > value')
     .map(n => parseInt(n.innerHTML))
 
-  const dewPoints = xmlToArray('temperature[type="dew point"] > value')
+  const dewPoints = getElementsFromXML('temperature[type="dew point"] > value')
     .map(n => parseInt(n.innerHTML))
   
-  const windChills = xmlToArray('temperature[type="wind chill"] > value')
+  const windChills = getElementsFromXML('temperature[type="wind chill"] > value')
     .map(n => parseInt(n.innerHTML))
   
-  const probabilityOfPercipitations = xmlToArray('probability-of-precipitation > value')
+  const probabilityOfPercipitations = getElementsFromXML('probability-of-precipitation > value')
     .map(n => parseInt(n.innerHTML))
 
-  const weatherConditions = xmlToArray('weather-conditions')
+  const weatherConditions = getElementsFromXML('weather-conditions')
     .map(n => {
       const value = n.querySelector('value')
       if (!value) {
@@ -53,10 +53,10 @@ const getForecastPointsFromXML = (responseXML: Document | null): ForecastPoint[]
       }
     })
 
-  const startTimes = xmlToArray('start-valid-time')
+  const startTimes = getElementsFromXML('start-valid-time')
     .map(n => n.innerHTML)
 
-  const endTimes = xmlToArray('end-valid-time')
+  const endTimes = getElementsFromXML('end-valid-time')
     .map(n => n.innerHTML)
 
   return startTimes.map((startTime, i) => ({
