@@ -140,13 +140,14 @@ if (isNaN(geoLocation.latitude) || isNaN(geoLocation.longitude)) {
 }
 
 const init = () => {
-  fetchWeatherForecastData(geoLocation).then(points => {
-    forecastPoints = points
-    
-    render()
-
-    window.onresize = () => {
+  fetchWeatherForecastData(geoLocation)
+    .then(points => {
+      forecastPoints = points
+      
       render()
-    }
-  })
+
+      window.onresize = () => {
+        render()
+      }
+    })
 }
