@@ -8,7 +8,9 @@ There is an XML source and a JSON API, but neither have all the data shown on th
 
 ## App usage
 
-`lat` and `lon` query parameters can be provided to override the default location.
+If the browser supports location, the user will be prompted to use that.
+
+`lat` and `lon` query parameters can be provided to override the default / browser location.
 
 There is also "invisible" buttons to zoom in / out and move forward / back through the days. These are in the top / bottom / left / right parts of the screen.
 

@@ -1,3 +1,5 @@
+import { GeoLocation } from './location.js'
+
 export interface WeatherCondition {
   type: string
   coverage: string
@@ -70,21 +72,7 @@ const getForecastPointsFromXML = (responseXML: Document | null): ForecastPoint[]
   }))
 }
 
-const getLatitudeAndLongitude = (): [number, number] => {
-  const queryParameters = new URLSearchParams(window.location.search)
-
-  const lat = parseFloat(queryParameters.get('lat') ?? '')
-  const lon = parseFloat(queryParameters.get('lon') ?? '')
-
-  return [
-    !isNaN(lat) ? lat : 41.9536,
-    !isNaN(lon) ? lon : -87.7117,
-  ]
-}
-
-const [latitude, longitude] = getLatitudeAndLongitude()
-
-export const fetchWeatherForecastData = () => new Promise<ForecastPoint[]>((resolve, reject) => {
+export const fetchWeatherForecastData = ({latitude, longitude}: GeoLocation) => new Promise<ForecastPoint[]>((resolve, reject) => {
   const xhr = new XMLHttpRequest()
 
   xhr.onload = () => {

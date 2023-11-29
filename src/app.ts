@@ -1,6 +1,7 @@
 import { ForecastPoint, fetchWeatherForecastData } from './weatherGovApi.js'
 import { Forecast } from './components/forecast.js'
 import { Controls } from './components/controls.js'
+import { getGeoLocationDefault, getGeoLocationFromLocation, getGeoLocationFromURL } from './location.js'
 
 const weatherForecastContainer = document.querySelector('weather-forecast') as HTMLElement | null
 let forecastPoints: ForecastPoint[] = []
@@ -124,12 +125,28 @@ const render = () => {
   weatherForecastContainer.appendChild(app)
 }
 
-fetchWeatherForecastData().then(points => {
-  forecastPoints = points
-  
-  render()
+let geoLocation = getGeoLocationFromURL()
 
-  window.onresize = () => {
+if (isNaN(geoLocation.latitude) || isNaN(geoLocation.longitude)) {
+  getGeoLocationFromLocation()
+    .then(location => {
+      geoLocation = location
+      init()
+    })
+    .catch(() => {
+      geoLocation = getGeoLocationDefault()
+      init()
+    })
+}
+
+const init = () => {
+  fetchWeatherForecastData(geoLocation).then(points => {
+    forecastPoints = points
+    
     render()
-  }
-})
+
+    window.onresize = () => {
+      render()
+    }
+  })
+}
