@@ -31,3 +31,7 @@ The compiled code uses ES6 modules, so there are a bunch of smaller files delive
 I could try a different build process like webpack or rollup, but I tried to keep this pretty simple.
 
 A lot of the scaffolding is from `yarn init` and `tsc --init`.
+
+## Credits
+
+Icon by [iconixar](https://www.flaticon.com/authors/iconixar)
