@@ -87,7 +87,7 @@ export const TimeGridLines = ({
     text.setAttribute('x', `${x}`)
     text.setAttribute('y', `${globalCanvasBounds.y.max * (2/3)}`)
     text.setAttribute('text-anchor', 'end')
-    text.setAttribute('transform', `rotate(-90 ${x} ${globalCanvasBounds.y.max * (2/3)}) translate(30, 5)`)
+    text.setAttribute('transform', `rotate(-90 ${x} ${globalCanvasBounds.y.max * (2/3)}) translate(15, 2.5)`)
     text.innerHTML = startTime.toLocaleString('en-US', {hour: 'numeric', hour12: true})
     text.classList.add('vertical-gridline')
     timeGridLines.appendChild(text)

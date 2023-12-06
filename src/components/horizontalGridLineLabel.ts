@@ -3,7 +3,7 @@ export const HorizontalGridLineLabel = ({
   x,
   y,
   className,
-  transform = 'translate(-10, 4)',
+  transform = 'translate(-5, 2)',
 }: {
   label: string
   x: number

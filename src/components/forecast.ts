@@ -50,7 +50,7 @@ export const Forecast = ({
     return forecast
   }
 
-  const canvasPadding = 50
+  const canvasPadding = 25
 
   // Temperature canvas takes up top 2/3 of screen.
   const temperatureCanvasHeightPercent = 2 / 3

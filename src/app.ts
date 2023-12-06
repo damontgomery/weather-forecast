@@ -2,7 +2,6 @@ import { ForecastPoint, fetchWeatherForecastData } from './weatherGovApi.js'
 import { Forecast } from './components/forecast.js'
 import { Controls } from './components/controls.js'
 import { getGeoLocationDefault, getGeoLocationFromLocation, getGeoLocationFromURL } from './location.js'
-import { registerServiceWorker } from './pwa.js'
 
 const weatherForecastContainer = document.querySelector('weather-forecast') as HTMLElement | null
 let forecastPoints: ForecastPoint[] = []
@@ -125,8 +124,6 @@ const render = () => {
 
   weatherForecastContainer.appendChild(app)
 }
-
-registerServiceWorker()
 
 let geoLocation = getGeoLocationFromURL()
 

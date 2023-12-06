@@ -36,7 +36,7 @@ export const TemperatureGridLines = ({
       x: canvasBounds.x.min + 0.5 * canvasBounds.x.length,
       y,
       className: 'temperature',
-      transform: 'translate(0, 4)',
+      transform: 'translate(0, 2)',
     }))
   }
 

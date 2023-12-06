@@ -16,7 +16,7 @@ export const DateLabels = ({
   startTimeLabel.setAttribute('x', `${canvasBounds.x.min}`)
   startTimeLabel.setAttribute('y', `${canvasBounds.y.min}`)
   startTimeLabel.setAttribute('text-anchor', 'start')
-  startTimeLabel.setAttribute('transform', 'translate(0, -18)')
+  startTimeLabel.setAttribute('transform', 'translate(0, -9)')
   startTimeLabel.innerHTML = startTime.toLocaleString('en-US', {weekday: 'long', month: '2-digit', day: 'numeric'})
   startTimeLabel.classList.add('date-label')
   startTimeLabel.classList.add('start')
@@ -25,7 +25,7 @@ export const DateLabels = ({
   const endTime = new Date(forecastPoints[forecastPoints.length - 1].endTime)
   const endTimeLabel = startTimeLabel.cloneNode(true) as SVGAElement
   endTimeLabel.setAttribute('text-anchor', 'end')
-  endTimeLabel.setAttribute('transform', `translate(${canvasBounds.x.length}, -18)`)
+  endTimeLabel.setAttribute('transform', `translate(${canvasBounds.x.length}, -9)`)
   endTimeLabel.innerHTML = endTime.toLocaleString('en-US', {weekday: 'long', month: '2-digit', day: 'numeric'})
   endTimeLabel.classList.add('end')
   dateLabels.appendChild(endTimeLabel)

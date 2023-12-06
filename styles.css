@@ -1,15 +1,16 @@
 body {
   font-family: sans-serif;
+  font: normal 12px sans-serif;
 }
 
 line {
-  stroke: 2;
+  stroke: 1;
   stroke: black;
   stroke-linecap: round;
 }
 
 polyline {
-  stroke-width: 20px;
+  stroke-width: 10px;
   stroke-linecap: round;
   opacity: 0.7;
   stroke-linejoin: round;
@@ -32,12 +33,10 @@ polyline.temperature {
 }
 
 .date-labels text {
-  font: normal 24px sans-serif;
   text-transform: lowercase;
 }
 
 .legend text {
-  font: normal 24px sans-serif;
   text-transform: lowercase;
 }
 
@@ -80,30 +79,28 @@ polyline.rain {
 line.horizontal-gridline {
   stroke: black;
   opacity: 0.5;
-  stroke-width: 3px;
-  stroke-dasharray: 20;
+  stroke-width: 1.5px;
+  stroke-dasharray: 10;
 }
 
 text.horizontal-gridline {
-  font: normal 24px sans-serif;
   fill: black;
   stroke: white;
-  stroke-width: 12px;
+  stroke-width: 6px;
   paint-order: stroke;
 }
 
 line.vertical-gridline {
   stroke: black;
   opacity: 0.5;
-  stroke-width: 1;
+  stroke-width: 0.5;
 }
 
 line.vertical-gridline.midnight {
-  stroke-width: 3;
+  stroke-width: 1.5;
 }
 
 text.vertical-gridline {
-  font: normal 24px sans-serif;
   fill: black;
   text-transform: lowercase;
 }

@@ -1,6 +1,5 @@
 import { DimensionBounds, CanvasBounds } from '../app.js'
 import { ForecastPoint } from '../weatherGovApi.js'
-import { DividedCanvasBounds } from './forecast.js'
 import { Polyline } from './polyline.js'
 
 export const TemperatureLine = ({
