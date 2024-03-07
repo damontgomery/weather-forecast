@@ -8,7 +8,7 @@ let forecastPoints: ForecastPoint[] = []
 let selectedForecastPointsPerScreen = 24
 let selectedScreen = 0
 
-const getSelectedForecastPoints = () => forecastPoints
+const getSelectedForecastPoints = (forecastPoints: ForecastPoint[]) => forecastPoints
   .slice(
     selectedScreen * selectedForecastPointsPerScreen,
     (selectedScreen + 1) * selectedForecastPointsPerScreen
@@ -82,6 +82,49 @@ export interface CanvasBounds {
   y: DimensionBounds
 }
 
+const temperatureUnits = ['f', 'c'] as const
+export type TemperatureUnit = typeof temperatureUnits[number]
+
+const isTemperatureUnit = (unit: string): unit is TemperatureUnit => temperatureUnits.includes(unit as TemperatureUnit)
+
+const getTemperatureUnitFromQuery = (): TemperatureUnit | null => {
+  const queryParameters = new URLSearchParams(window.location.search)
+  const tUnitQueryParameter = queryParameters.get('tUnit')
+
+  if (tUnitQueryParameter === null ) {
+    return null
+  }
+
+  if (isTemperatureUnit(tUnitQueryParameter) === false) {
+    return null
+  }
+
+  return tUnitQueryParameter
+}
+
+const temperatureUnit = getTemperatureUnitFromQuery() ?? 'f'
+
+const convertFahrenheitToCelsius = (fahrenheit: number) => (fahrenheit - 32) * (5 / 9)
+
+const convertForecastPointsToTemperatureUnit = ({
+  forecastPoints,
+  temperatureUnit,
+}: {
+  forecastPoints: ForecastPoint[],
+  temperatureUnit: TemperatureUnit,
+}): ForecastPoint[] => forecastPoints.map(forecastPoint => {
+  if (temperatureUnit === 'f') {
+    return forecastPoint
+  }
+
+  return {
+    ...forecastPoint,
+    temperature: convertFahrenheitToCelsius(forecastPoint.temperature),
+    dewPoint: convertFahrenheitToCelsius(forecastPoint.dewPoint),
+    windChill: convertFahrenheitToCelsius(forecastPoint.windChill),
+  }
+})
+
 const render = () => {
   if (!weatherForecastContainer) {
     return
@@ -110,7 +153,10 @@ const render = () => {
   app.setAttribute('viewBox', `0 0 ${canvasBounds.x.max} ${canvasBounds.y.max}`)
 
   app.appendChild(Forecast({
-    forecastPoints: getSelectedForecastPoints(),
+    forecastPoints: convertForecastPointsToTemperatureUnit({
+      forecastPoints: getSelectedForecastPoints(forecastPoints),
+      temperatureUnit,
+    }),
     globalCanvasBounds: canvasBounds,
   }))
 
