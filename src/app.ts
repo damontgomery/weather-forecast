@@ -2,6 +2,7 @@ import { ForecastPoint, fetchWeatherForecastData } from './weatherGovApi.js'
 import { Forecast } from './components/forecast.js'
 import { Controls } from './components/controls.js'
 import { getGeoLocationDefault, getGeoLocationFromLocation, getGeoLocationFromURL } from './location.js'
+import { convertForecastPointsToTemperatureUnit, getTemperatureUnit } from './temperature.js'
 
 const weatherForecastContainer = document.querySelector('weather-forecast') as HTMLElement | null
 let forecastPoints: ForecastPoint[] = []
@@ -82,49 +83,6 @@ export interface CanvasBounds {
   y: DimensionBounds
 }
 
-const temperatureUnits = ['f', 'c'] as const
-export type TemperatureUnit = typeof temperatureUnits[number]
-
-const isTemperatureUnit = (unit: string): unit is TemperatureUnit => temperatureUnits.includes(unit as TemperatureUnit)
-
-const getTemperatureUnitFromQuery = (): TemperatureUnit | null => {
-  const queryParameters = new URLSearchParams(window.location.search)
-  const tUnitQueryParameter = queryParameters.get('tUnit')
-
-  if (tUnitQueryParameter === null ) {
-    return null
-  }
-
-  if (isTemperatureUnit(tUnitQueryParameter) === false) {
-    return null
-  }
-
-  return tUnitQueryParameter
-}
-
-const temperatureUnit = getTemperatureUnitFromQuery() ?? 'f'
-
-const convertFahrenheitToCelsius = (fahrenheit: number) => (fahrenheit - 32) * (5 / 9)
-
-const convertForecastPointsToTemperatureUnit = ({
-  forecastPoints,
-  temperatureUnit,
-}: {
-  forecastPoints: ForecastPoint[],
-  temperatureUnit: TemperatureUnit,
-}): ForecastPoint[] => forecastPoints.map(forecastPoint => {
-  if (temperatureUnit === 'f') {
-    return forecastPoint
-  }
-
-  return {
-    ...forecastPoint,
-    temperature: convertFahrenheitToCelsius(forecastPoint.temperature),
-    dewPoint: convertFahrenheitToCelsius(forecastPoint.dewPoint),
-    windChill: convertFahrenheitToCelsius(forecastPoint.windChill),
-  }
-})
-
 const render = () => {
   if (!weatherForecastContainer) {
     return
@@ -155,7 +113,7 @@ const render = () => {
   app.appendChild(Forecast({
     forecastPoints: convertForecastPointsToTemperatureUnit({
       forecastPoints: getSelectedForecastPoints(forecastPoints),
-      temperatureUnit,
+      temperatureUnit: getTemperatureUnit(),
     }),
     globalCanvasBounds: canvasBounds,
   }))
