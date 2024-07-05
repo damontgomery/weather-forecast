@@ -91,7 +91,7 @@ export const fetchWeatherForecastData = ({latitude, longitude}: GeoLocation) => 
     reject(new Error('Timed out loading weather forecast data.'))
   }
 
-  xhr.open('GET',`https://f1.weather.gov/MapClick.php?lat=${latitude}&lon=${longitude}&FcstType=digitalDWML`, true)
+  xhr.open('GET',`https://forecast.weather.gov/MapClick.php?lat=${latitude}&lon=${longitude}&FcstType=digitalDWML`, true)
   xhr.responseType = 'document'
   xhr.send()
 })
