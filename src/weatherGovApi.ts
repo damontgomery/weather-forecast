@@ -13,10 +13,7 @@ export interface ForecastPoint {
   dewPoint: number
   windChill: number
   probabilityOfPercipitation: number
-  weatherCondition: {
-    type: string
-    coverage: string
-  }
+  weatherConditions: WeatherCondition[]
 }
 
 const getForecastPointsFromXML = (responseXML: Document | null): ForecastPoint[] => {
@@ -28,47 +25,49 @@ const getForecastPointsFromXML = (responseXML: Document | null): ForecastPoint[]
   }
 
   const temperatures = getElementsFromXML('temperature[type="hourly"] > value')
-    .map(n => parseInt(n.innerHTML))
+    .map(element => parseInt(element.innerHTML))
 
   const dewPoints = getElementsFromXML('temperature[type="dew point"] > value')
-    .map(n => parseInt(n.innerHTML))
+    .map(element => parseInt(element.innerHTML))
   
   const windChills = getElementsFromXML('temperature[type="wind chill"] > value')
-    .map(n => parseInt(n.innerHTML))
+    .map(element => parseInt(element.innerHTML))
   
   const probabilityOfPercipitations = getElementsFromXML('probability-of-precipitation > value')
-    .map(n => parseInt(n.innerHTML))
+    .map(element => parseInt(element.innerHTML))
 
-  const weatherConditions = getElementsFromXML('weather-conditions')
-    .map(n => {
-      const value = n.querySelector('value')
-      if (!value) {
-        return {
-          type: 'none',
-          coverage: 'none',
-        }
+  const weatherConditions: WeatherCondition[][] = getElementsFromXML('weather-conditions')
+    .map(element => {
+      const values = element.querySelectorAll('value')
+      if (!values) {
+        return [
+          {
+            type: 'none',
+            coverage: 'none',
+          },
+        ]
       }
 
-      return {
+      return Array.from(values).map(value => ({
         type: value.getAttribute('weather-type') ?? 'none',
         coverage: value.getAttribute('coverage') ?? 'none',
-      }
+      }))
     })
 
   const startTimes = getElementsFromXML('start-valid-time')
-    .map(n => n.innerHTML)
+    .map(element => element.innerHTML)
 
   const endTimes = getElementsFromXML('end-valid-time')
-    .map(n => n.innerHTML)
+    .map(element => element.innerHTML)
 
-  return startTimes.map((startTime, i) => ({
+  return startTimes.map((startTime, index) => ({
     startTime,
-    endTime: endTimes[i],
-    temperature: temperatures[i],
-    dewPoint: dewPoints[i],
-    windChill: windChills[i],
-    probabilityOfPercipitation: probabilityOfPercipitations[i],
-    weatherCondition: weatherConditions[i],
+    endTime: endTimes[index],
+    temperature: temperatures[index],
+    dewPoint: dewPoints[index],
+    windChill: windChills[index],
+    probabilityOfPercipitation: probabilityOfPercipitations[index],
+    weatherConditions: weatherConditions[index],
   }))
 }
 

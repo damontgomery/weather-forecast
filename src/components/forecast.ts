@@ -97,6 +97,8 @@ export const Forecast = ({
     canvasBounds: temperatureCanvasBounds,
     temperatureBounds,
   }))
+  // Items added later will overlay those before.
+  // So, they will be more prominent, because of transparency.
   forecast.appendChild(TemperatureLine({
     propertyName: 'temperature',
     className: 'temperature',
@@ -120,14 +122,20 @@ export const Forecast = ({
   }))
   forecast.appendChild(PrecipitationGridLines({canvasBounds: precipitationCanvasBounds}))
   forecast.appendChild(PrecipitationLine({
-    propertyName: 'snow',
-    className: 'snow',
+    propertyName: 'rain',
+    className: 'rain',
     forecastPoints,
     canvasBounds: precipitationCanvasBounds,
   }))
   forecast.appendChild(PrecipitationLine({
-    propertyName: 'rain',
-    className: 'rain',
+    propertyName: 'thunderstorms',
+    className: 'thunderstorms',
+    forecastPoints,
+    canvasBounds: precipitationCanvasBounds,
+  }))
+  forecast.appendChild(PrecipitationLine({
+    propertyName: 'snow',
+    className: 'snow',
     forecastPoints,
     canvasBounds: precipitationCanvasBounds,
   }))

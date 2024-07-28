@@ -41,7 +41,7 @@ export const Legend = ({
   legend.classList.add('legend')
   legend.setAttribute('transform', `translate(${canvasPadding} ${canvasBounds.y.max - (canvasPadding / 2) + 7.5})`);
 
-  const legendLabelWidth = (canvasBounds.x.length - (2 * canvasPadding)) / 5
+  const legendLabelWidth = (canvasBounds.x.length - (2 * canvasPadding)) / 6
 
   new Array(
     { label: 'Temperature', className: 'temperature' },
@@ -49,6 +49,7 @@ export const Legend = ({
     { label: 'Wind Chill', className: 'wind-chill' },
     { label: 'Snow', className: 'snow' },
     { label: 'Rain', className: 'rain' },
+    { label: 'Thunderstorms', className: 'thunderstorms' },
   ).forEach(({ label, className }, index, array) => {
     legend.appendChild(LegendLabel({
       label,

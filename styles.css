@@ -21,11 +21,18 @@ polygon {
 }
 
 body {
+/* See https://color.adobe.com/create/color-wheel */
+/* This is a square color scheme with green slightly muted and purple fairly muted. */
+/* Default to HSB [x, 100, 96] */
   --temperature-color: #F57700;
   --dew-point-color: #00C2F5;
   --wind-chill-color: #7ED800;
   --snow-color: #8C35A0;
   --rain-color: #00C2F5;
+  /* This is a triad with two colors close to the blue / purple of the square above. This is also CMYK... */
+  --thunderstorms-color: #F5C800;
+  --other-color-A: #D800B4;
+  --other-color-B: #00F5DC;
 }
 
 polyline.temperature {
@@ -74,6 +81,14 @@ polyline.rain {
 
 .legend > .rain {
   fill: var(--rain-color);
+}
+
+polyline.thunderstorms {
+  stroke: var(--thunderstorms-color);
+}
+
+.legend > .thunderstorms {
+  fill: var(--thunderstorms-color);
 }
 
 line.horizontal-gridline {

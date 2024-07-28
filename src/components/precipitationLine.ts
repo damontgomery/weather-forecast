@@ -15,16 +15,18 @@ export const PrecipitationLine = ({
   canvasBounds: CanvasBounds
 }): SVGPolylineElement => Polyline({
   points: forecastPoints.map((forecastPoint, i) => {
-    const weatherCondition = forecastPoint.weatherCondition
+    const weatherConditions = forecastPoint.weatherConditions
 
     let value = 0;
 
-    if (
-      weatherCondition.type === propertyName &&
-      precipitationCoverageLabelToValueMap.has(weatherCondition.coverage)
-    ) {
-      value = (precipitationCoverageLabelToValueMap.get(weatherCondition.coverage) as PrecipitationCoverageValue).value
-    }
+    weatherConditions.forEach(weatherCondition => {
+      if (
+        weatherCondition.type === propertyName &&
+        precipitationCoverageLabelToValueMap.has(weatherCondition.coverage)
+      ) {
+        value = (precipitationCoverageLabelToValueMap.get(weatherCondition.coverage) as PrecipitationCoverageValue).value
+      }
+    })
     
     return {
       x: canvasBounds.x.min + canvasBounds.x.length * (i / (forecastPoints.length - 1)),
